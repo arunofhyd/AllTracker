@@ -14,7 +14,6 @@
             overflow-x: hidden;
         }
         
-        /* Strict Grid Constraints to prevent overflow on mobile */
         .calendar-grid { 
             display: grid; 
             grid-template-columns: repeat(7, minmax(0, 1fr)); 
@@ -45,16 +44,27 @@
 
         .hidden-ui { display: none !important; }
         
-        /* Custom scrollbar */
         .custom-scroll::-webkit-scrollbar { width: 5px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
 
-        /* Modal Overlay */
-        #editModal { transition: opacity 0.2s ease; }
+        #editModal, #catManagementModal { transition: opacity 0.2s ease; }
         
-        /* Ensure inputs don't zoom on iOS */
         input { font-size: 16px !important; }
+
+        /* Color Swatch Styling */
+        .color-swatch {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .color-swatch.active {
+            border-color: #cbd5e1;
+            transform: scale(1.1);
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen">
@@ -63,20 +73,20 @@
     <div id="authOverlay" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-100 p-4">
         <div class="bg-white w-full max-w-md rounded-3xl p-8 shadow-sm border border-slate-200 text-center">
             <header class="mb-8">
-                <h1 class="text-4xl font-bold text-indigo-600 mb-2">Tide Tracker</h1>
+                <h1 class="text-4xl font-bold text-blue-600 mb-2">Tide Tracker</h1>
                 <p class="text-slate-500">Made with ❤️ by Appu for Baby</p>
             </header>
             
             <div id="authForm" class="space-y-4 text-left">
                 <div>
                     <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Email</label>
-                    <input type="email" id="email" placeholder="email@example.com" class="w-full border rounded-xl px-4 py-3 mt-1 outline-none focus:ring-2 focus:ring-indigo-400 transition">
+                    <input type="email" id="email" placeholder="email@example.com" class="w-full border rounded-xl px-4 py-3 mt-1 outline-none focus:ring-2 focus:ring-blue-400 transition">
                 </div>
                 
                 <div class="relative">
                     <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Password</label>
                     <div class="relative mt-1">
-                        <input type="password" id="password" placeholder="••••••••" class="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-400 transition">
+                        <input type="password" id="password" placeholder="••••••••" class="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-400 transition">
                         <button onclick="togglePasswordVisibility()" class="absolute right-4 top-3.5 text-slate-400">
                             <i id="eyeIcon" class="fas fa-eye"></i>
                         </button>
@@ -84,7 +94,7 @@
                 </div>
 
                 <div class="grid grid-cols-2 gap-3 pt-2">
-                    <button onclick="handleAuth('login')" class="bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition active:scale-95">Sign In</button>
+                    <button onclick="handleAuth('login')" class="bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-100 transition active:scale-95">Sign In</button>
                     <button onclick="handleAuth('signup')" class="bg-slate-100 text-slate-600 font-bold py-3 rounded-xl hover:bg-slate-200 transition active:scale-95">Sign Up</button>
                 </div>
 
@@ -105,22 +115,48 @@
         </div>
     </div>
 
-    <!-- Edit Modal -->
-    <div id="editModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <!-- Edit Entry Modal -->
+    <div id="editModal" class="fixed inset-0 z-[60] hidden-ui flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 text-left">
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-xl border border-slate-100">
             <h3 class="text-xl font-bold mb-4 text-slate-800">Edit Entry</h3>
             <div class="space-y-4">
                 <div>
                     <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Call Title</label>
-                    <input type="text" id="modalEditName" class="w-full border rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-400 mt-1">
+                    <input type="text" id="modalEditName" class="w-full border rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-blue-400 mt-1">
                 </div>
                 <div>
                     <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Time</label>
-                    <input type="text" id="modalEditTime" class="w-full border rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-400 mt-1">
+                    <input type="text" id="modalEditTime" class="w-full border rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-blue-400 mt-1">
                 </div>
                 <div class="flex gap-2 pt-2">
-                    <button onclick="saveEditFromModal()" class="flex-1 bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition">Save</button>
+                    <button onclick="saveEditFromModal()" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition">Save</button>
                     <button onclick="closeEditModal()" class="flex-1 bg-slate-100 text-slate-500 font-bold py-3 rounded-xl hover:bg-slate-200 transition">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Management Modal -->
+    <div id="catManagementModal" class="fixed inset-0 z-[60] hidden-ui flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 text-left">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-xl border border-slate-100">
+            <h3 class="text-xl font-bold mb-4 text-slate-800">Manage Category</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Category Name</label>
+                    <input type="text" id="catEditName" class="w-full border rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-blue-400 mt-1 text-sm">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Change Color</label>
+                    <div class="flex flex-wrap gap-2 mt-2 px-1" id="catEditPalette">
+                        <!-- Swatches injected by JS -->
+                    </div>
+                </div>
+                <div class="flex flex-col gap-2 pt-4">
+                    <button onclick="saveCatChanges()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition">Save Changes</button>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="deleteSelectedCat()" class="bg-red-50 text-red-600 font-bold py-2 rounded-xl hover:bg-red-100 transition text-sm">Delete</button>
+                        <button onclick="closeCatModal()" class="bg-slate-100 text-slate-500 font-bold py-2 rounded-xl hover:bg-slate-200 transition text-sm">Cancel</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -133,17 +169,17 @@
                 <div class="absolute right-0 top-0">
                     <button onclick="handleLogout()" class="text-slate-300 hover:text-red-500 p-2 transition"><i class="fas fa-power-off text-lg"></i></button>
                 </div>
-                <h1 class="text-3xl md:text-5xl font-bold text-indigo-600 mb-1">Sheetu's Tide Tracker</h1>
+                <h1 class="text-3xl md:text-5xl font-bold text-blue-600 mb-1 leading-tight">Sheetu's Tide Tracker</h1>
                 <p class="text-xs md:text-base text-slate-500">Made with ❤️ by Appu for Baby <span id="statusTag" class="ml-1 text-[9px] font-bold uppercase px-2 py-0.5 rounded border border-slate-200 bg-white"></span></p>
             </header>
 
             <div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 items-start">
                 
-                <!-- LEFT: LOGS AREA (7 columns) -->
+                <!-- LEFT: LOGS AREA -->
                 <div class="md:col-span-7 space-y-6">
                     <div class="bg-white p-5 md:p-8 rounded-3xl shadow-sm border border-slate-200">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                            <h3 id="selectedDateTitle" class="text-2xl md:text-3xl font-bold text-indigo-500">Today's Log</h3>
+                            <h3 id="selectedDateTitle" class="text-2xl md:text-3xl font-bold text-blue-600">Today's Log</h3>
                             <div class="flex flex-wrap gap-2" id="quickLogButtons"></div>
                         </div>
                         <div class="border-t border-slate-50 pt-6">
@@ -154,7 +190,7 @@
                     </div>
                 </div>
 
-                <!-- RIGHT: SIDEBAR (5 columns) -->
+                <!-- RIGHT: SIDEBAR -->
                 <div class="md:col-span-5 space-y-6">
                     <!-- Calendar Card -->
                     <div class="bg-white p-4 md:p-6 rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
@@ -177,15 +213,32 @@
 
                     <!-- Categories Card -->
                     <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
-                        <h3 class="font-bold mb-4 text-slate-400 text-[10px] uppercase tracking-widest flex items-center gap-2">
-                            <i class="fas fa-tags"></i> Categories
-                        </h3>
-                        <div class="flex gap-2 mb-4">
-                            <input type="text" id="catName" placeholder="Label name..." class="flex-1 border rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-indigo-400 text-sm">
-                            <input type="color" id="catColor" value="#6366f1" class="h-10 w-10 border rounded-xl p-1 bg-white cursor-pointer">
-                            <button onclick="addCategory()" class="bg-indigo-600 text-white px-4 rounded-xl font-bold text-xs hover:bg-indigo-700 transition">Add</button>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-slate-400 text-[10px] uppercase tracking-widest flex items-center gap-2">
+                                <i class="fas fa-tags"></i> Categories
+                            </h3>
+                            <span class="text-[9px] text-slate-300 italic font-bold">Tap a tag to manage</span>
                         </div>
-                        <div id="categoryList" class="flex flex-wrap gap-2">
+                        <div class="space-y-4">
+                            <div class="flex gap-2">
+                                <input type="text" id="catName" placeholder="Category name..." class="flex-1 border rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-blue-400 text-sm">
+                                <button onclick="addCategory()" class="bg-blue-600 text-white px-6 rounded-xl font-bold text-xs hover:bg-blue-700 transition">Add</button>
+                            </div>
+                            
+                            <!-- Simple Color Palette -->
+                            <div class="flex flex-wrap gap-2.5 px-1" id="colorPalette">
+                                <div class="color-swatch active" style="background: #2563eb" onclick="selectSwatch('#2563eb', this)"></div>
+                                <div class="color-swatch" style="background: #ef4444" onclick="selectSwatch('#ef4444', this)"></div>
+                                <div class="color-swatch" style="background: #10b981" onclick="selectSwatch('#10b981', this)"></div>
+                                <div class="color-swatch" style="background: #f59e0b" onclick="selectSwatch('#f59e0b', this)"></div>
+                                <div class="color-swatch" style="background: #ec4899" onclick="selectSwatch('#ec4899', this)"></div>
+                                <div class="color-swatch" style="background: #8b5cf6" onclick="selectSwatch('#8b5cf6', this)"></div>
+                                <div class="color-swatch" style="background: #0ea5e9" onclick="selectSwatch('#0ea5e9', this)"></div>
+                                <div class="color-swatch" style="background: #64748b" onclick="selectSwatch('#64748b', this)"></div>
+                            </div>
+                        </div>
+                        
+                        <div id="categoryList" class="flex flex-wrap gap-2 mt-6">
                             <!-- Categories populated here -->
                         </div>
                     </div>
@@ -217,17 +270,36 @@
 
         let currentUser = null;
         let isGuest = false;
-        let categories = [{ name: 'Call', color: '#6366f1' }];
+        let categories = [{ name: 'Call', color: '#2563eb' }];
         let logs = {};
         let selectedDate = new Date().toDateString();
         let currentMonth = new Date();
         let currentEditIndex = null;
+        let currentCatEditIndex = null;
+        let activeColor = '#2563eb';
+        let catEditActiveColor = '#2563eb';
+
+        const paletteColors = ['#2563eb', '#ef4444', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#0ea5e9', '#64748b'];
+
+        // SWATCH HANDLER
+        window.selectSwatch = (color, el) => {
+            activeColor = color;
+            document.querySelectorAll('#colorPalette .color-swatch').forEach(s => s.classList.remove('active'));
+            el.classList.add('active');
+        };
+
+        window.selectCatEditSwatch = (color, el) => {
+            catEditActiveColor = color;
+            document.querySelectorAll('#catEditPalette .color-swatch').forEach(s => s.classList.remove('active'));
+            el.classList.add('active');
+        };
 
         // AUTH HANDLERS
         window.handleGuestLogin = () => {
             isGuest = true;
+            localStorage.setItem('tide_session_type', 'guest');
             currentUser = { uid: 'guest' };
-            const saved = JSON.parse(localStorage.getItem('tide_guest_data')) || { categories: [{ name: 'Call', color: '#6366f1' }], logs: {} };
+            const saved = JSON.parse(localStorage.getItem('tide_guest_data')) || { categories: [{ name: 'Call', color: '#2563eb' }], logs: {} };
             categories = saved.categories;
             logs = saved.logs;
             enterApp();
@@ -238,14 +310,19 @@
             const password = document.getElementById('password').value;
             if(!email || !password) return showError("Please fill in both fields.");
             try {
+                localStorage.setItem('tide_session_type', 'firebase'); 
                 if (type === 'login') await signInWithEmailAndPassword(auth, email, password);
                 else await createUserWithEmailAndPassword(auth, email, password);
             } catch (err) { showError(err.message); }
         };
 
-        window.handleGoogleLogin = () => signInWithPopup(auth, provider).catch(e => showError(e.message));
+        window.handleGoogleLogin = () => {
+            localStorage.setItem('tide_session_type', 'firebase');
+            signInWithPopup(auth, provider).catch(e => showError(e.message));
+        };
         
         window.handleLogout = () => {
+            localStorage.removeItem('tide_session_type');
             if(isGuest) {
                 isGuest = false;
                 location.reload();
@@ -273,24 +350,33 @@
             setTimeout(() => err.classList.add('hidden'), 5000);
         }
 
-        onAuthStateChanged(auth, (user) => {
-            if (user && !isGuest) {
-                currentUser = user;
-                onSnapshot(doc(db, "users", user.uid), (docSnap) => {
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        categories = data.categories || categories;
-                        logs = data.logs || {};
-                        enterApp();
-                    } else {
-                        saveData();
-                    }
-                });
-            } else if (!isGuest) {
-                document.getElementById('authOverlay').classList.remove('hidden-ui');
-                document.getElementById('mainApp').classList.add('hidden-ui');
-            }
-        });
+        // INITIALIZE APP
+        const initSession = () => {
+            const sessionType = localStorage.getItem('tide_session_type');
+            
+            onAuthStateChanged(auth, (user) => {
+                if (user && !isGuest) {
+                    currentUser = user;
+                    localStorage.setItem('tide_session_type', 'firebase');
+                    onSnapshot(doc(db, "users", user.uid), (docSnap) => {
+                        if (docSnap.exists()) {
+                            const data = docSnap.data();
+                            categories = data.categories || categories;
+                            logs = data.logs || {};
+                            enterApp();
+                        } else {
+                            saveData();
+                            enterApp();
+                        }
+                    }, (err) => console.error("Snapshot error:", err));
+                } else if (sessionType === 'guest') {
+                    handleGuestLogin();
+                } else {
+                    document.getElementById('authOverlay').classList.remove('hidden-ui');
+                    document.getElementById('mainApp').classList.add('hidden-ui');
+                }
+            });
+        };
 
         async function saveData() {
             if (!currentUser) return;
@@ -340,8 +426,8 @@
                 grid.innerHTML += `
                     <div onclick="selectDate('${dateStr}')" 
                          class="day-cell border cursor-pointer transition 
-                         ${isSelected ? 'border-indigo-600 bg-indigo-50 ring-2 ring-indigo-100 z-10' : 'bg-white border-slate-50 hover:bg-slate-50'}">
-                        <span class="text-[10px] md:text-sm ${isSelected ? 'font-bold text-indigo-600' : ''} ${isToday && !isSelected ? 'text-indigo-400 font-bold underline' : ''}">${d}</span>
+                         ${isSelected ? 'border-blue-600 bg-blue-50 ring-2 ring-blue-100 z-10 shadow-sm' : 'bg-white border-slate-50 hover:bg-slate-50'}">
+                        <span class="text-[10px] md:text-sm ${isSelected ? 'font-bold text-blue-600' : ''} ${isToday && !isSelected ? 'text-blue-400 font-bold underline' : ''}">${d}</span>
                         <div class="flex flex-wrap justify-center px-0.5 mt-0.5">${dots}</div>
                     </div>`;
             }
@@ -359,18 +445,51 @@
 
         window.addCategory = () => {
             const name = document.getElementById('catName').value;
-            const color = document.getElementById('catColor').value;
             if (name) {
-                categories.push({ name, color });
+                categories.push({ name, color: activeColor });
                 document.getElementById('catName').value = '';
                 saveData();
             }
         };
 
-        window.removeCat = (idx) => {
-            if(confirm("Remove this category?")) {
-                categories.splice(idx, 1);
+        // CATEGORY MANAGEMENT
+        window.openCatModal = (idx) => {
+            currentCatEditIndex = idx;
+            const cat = categories[idx];
+            catEditActiveColor = cat.color;
+            document.getElementById('catEditName').value = cat.name;
+            
+            const palette = document.getElementById('catEditPalette');
+            palette.innerHTML = paletteColors.map(color => `
+                <div class="color-swatch ${color === cat.color ? 'active' : ''}" 
+                     style="background: ${color}" 
+                     onclick="selectCatEditSwatch('${color}', this)"></div>
+            `).join('');
+            
+            document.getElementById('catManagementModal').classList.remove('hidden-ui');
+        };
+
+        window.closeCatModal = () => {
+            document.getElementById('catManagementModal').classList.add('hidden-ui');
+            currentCatEditIndex = null;
+        };
+
+        window.saveCatChanges = () => {
+            if (currentCatEditIndex !== null) {
+                categories[currentCatEditIndex].name = document.getElementById('catEditName').value;
+                categories[currentCatEditIndex].color = catEditActiveColor;
                 saveData();
+                closeCatModal();
+            }
+        };
+
+        window.deleteSelectedCat = () => {
+            if (currentCatEditIndex !== null) {
+                if(confirm(`Delete "${categories[currentCatEditIndex].name}"? This won't delete previous logs but will remove the quick-log button.`)) {
+                    categories.splice(currentCatEditIndex, 1);
+                    saveData();
+                    closeCatModal();
+                }
             }
         };
 
@@ -381,9 +500,10 @@
             
             categories.forEach((cat, idx) => {
                 list.innerHTML += `
-                    <span class="px-3 py-1 rounded-full text-[10px] font-bold text-white flex items-center gap-2 shadow-sm" style="background:${cat.color}">
+                    <span class="px-3 py-1 rounded-full text-[10px] font-bold text-white cursor-pointer shadow-sm hover:brightness-95 active:scale-95 transition" 
+                          style="background:${cat.color}"
+                          onclick="openCatModal(${idx})">
                         ${cat.name}
-                        <button onclick="removeCat(${idx})" class="hover:text-black opacity-50 hover:opacity-100 transition"><i class="fas fa-times"></i></button>
                     </span>`;
                 
                 buttons.innerHTML += `
@@ -413,13 +533,13 @@
             }
 
             container.innerHTML = daily.map((l, i) => `
-                <div class="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-100 group transition hover:border-indigo-200">
-                    <div class="flex items-center gap-4 min-w-0 flex-1">
+                <div class="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-100 group transition hover:border-blue-200">
+                    <div class="flex items-center gap-4 min-w-0 flex-1 text-left">
                         <div class="w-1.5 h-10 rounded-full" style="background:${l.color}"></div>
                         <div class="min-w-0">
                             <div class="flex items-center gap-2">
                                 <p class="font-bold text-sm md:text-lg text-slate-700 truncate">${l.name}</p>
-                                <button onclick="openEditModal(${i})" class="text-[10px] font-bold text-indigo-400 hover:underline">edit</button>
+                                <button onclick="openEditModal(${i})" class="text-[10px] font-bold text-blue-400 hover:underline">edit</button>
                             </div>
                             <p class="text-[10px] md:text-xs text-slate-400 font-bold uppercase tracking-widest">${l.time}</p>
                         </div>
@@ -434,11 +554,11 @@
             const entry = logs[selectedDate][i];
             document.getElementById('modalEditName').value = entry.name;
             document.getElementById('modalEditTime').value = entry.time;
-            document.getElementById('editModal').classList.remove('hidden');
+            document.getElementById('editModal').classList.remove('hidden-ui');
         };
 
         window.closeEditModal = () => {
-            document.getElementById('editModal').classList.add('hidden');
+            document.getElementById('editModal').classList.add('hidden-ui');
             currentEditIndex = null;
         };
 
@@ -465,6 +585,10 @@
                 .then(() => alert("Password reset email sent!"))
                 .catch((error) => showError(error.message));
         };
+
+        // Start App
+        initSession();
+
     </script>
 </body>
 </html>
