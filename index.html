@@ -9,11 +9,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'League Spartan', sans-serif; -webkit-tap-highlight-color: transparent; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
-        .dot { height: 6px; width: 6px; border-radius: 50%; display: inline-block; margin: 1px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); width: 100%; }
+        .dot { height: 5px; width: 5px; border-radius: 50%; display: inline-block; margin: 1px; }
+        .day-cell { aspect-ratio: 1 / 1; min-height: 40px; }
+        @media (min-width: 768px) { .day-cell { height: 3.5rem; aspect-ratio: auto; } }
         .hidden-ui { display: none !important; }
-        /* Modal Overlay Animation */
         #editModal { transition: opacity 0.2s ease; }
+        /* Custom scrollbar for a cleaner look */
+        .custom-scroll::-webkit-scrollbar { width: 5px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen">
@@ -24,7 +28,6 @@
                 <h1 class="text-4xl font-bold text-indigo-600 mb-2">Tide Tracker</h1>
                 <p class="text-slate-500">Made with ❤️ by Appu for Baby</p>
             </header>
-            
             <div id="authForm" class="space-y-4 text-left">
                 <input type="email" id="email" placeholder="Email" class="w-full border rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-400">
                 <div class="relative">
@@ -35,91 +38,77 @@
                     <button onclick="handleAuth('login')" class="bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition">Sign In</button>
                     <button onclick="handleAuth('signup')" class="bg-slate-200 text-slate-700 font-bold py-3 rounded-lg hover:bg-slate-300 transition">Sign Up</button>
                 </div>
-                <div class="flex items-center my-4 text-slate-300 text-xs uppercase font-bold tracking-widest">
-                    <div class="flex-1 border-t"></div><span class="px-3">Or</span><div class="flex-1 border-t"></div>
-                </div>
+                <div class="flex items-center my-4 text-slate-300 text-xs uppercase font-bold tracking-widest"><div class="flex-1 border-t"></div><span class="px-3">Or</span><div class="flex-1 border-t"></div></div>
                 <div class="grid grid-cols-2 gap-3">
-                    <button onclick="handleGoogleLogin()" class="border border-slate-200 flex items-center justify-center gap-2 py-3 rounded-lg hover:bg-slate-50 transition font-semibold text-sm">
-                        <img src="assets/google.webp" class="w-4 h-4 object-contain"> Google
-                    </button>
-                    <button onclick="handleGuestLogin()" class="bg-slate-800 text-white flex items-center justify-center gap-2 py-3 rounded-lg hover:bg-slate-900 transition font-semibold text-sm">
-                        <i class="fas fa-user-secret"></i> Guest
-                    </button>
+                    <button onclick="handleGoogleLogin()" class="border border-slate-200 flex items-center justify-center gap-2 py-3 rounded-lg hover:bg-slate-50 transition font-semibold text-sm"><img src="assets/google.webp" class="w-4 h-4 object-contain"> Google</button>
+                    <button onclick="handleGuestLogin()" class="bg-slate-800 text-white flex items-center justify-center gap-2 py-3 rounded-lg hover:bg-slate-900 transition font-semibold text-sm"><i class="fas fa-user-secret"></i> Guest</button>
                 </div>
             </div>
-            <p id="authError" class="text-red-500 text-xs mt-4 hidden bg-red-50 p-2 rounded"></p>
         </div>
     </div>
 
     <div id="editModal" class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
         <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-xl">
-            <h3 class="text-xl font-bold mb-4 text-slate-800">Edit Log Entry</h3>
+            <h3 class="text-xl font-bold mb-4">Edit Entry</h3>
             <div class="space-y-4">
-                <div>
-                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Call Title</label>
-                    <input type="text" id="modalEditName" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-400 mt-1">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1">Time</label>
-                    <input type="text" id="modalEditTime" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-400 mt-1">
-                </div>
+                <div><label class="text-[10px] font-bold text-slate-400 uppercase">Call Title</label><input type="text" id="modalEditName" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-400 mt-1"></div>
+                <div><label class="text-[10px] font-bold text-slate-400 uppercase">Time</label><input type="text" id="modalEditTime" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-400 mt-1"></div>
                 <div class="flex gap-2 pt-2">
-                    <button onclick="saveEditFromModal()" class="flex-1 bg-indigo-600 text-white font-bold py-2 rounded-lg hover:bg-indigo-700">Save Changes</button>
-                    <button onclick="closeEditModal()" class="flex-1 bg-slate-100 text-slate-500 font-bold py-2 rounded-lg hover:bg-slate-200">Cancel</button>
+                    <button onclick="saveEditFromModal()" class="flex-1 bg-indigo-600 text-white font-bold py-2 rounded-lg">Save</button>
+                    <button onclick="closeEditModal()" class="flex-1 bg-slate-100 text-slate-500 font-bold py-2 rounded-lg">Cancel</button>
                 </div>
             </div>
         </div>
     </div>
 
     <div id="mainApp" class="hidden-ui">
-        <div class="max-w-4xl mx-auto p-6 pb-20">
-            <header class="text-center mb-10 relative">
-                <div class="absolute right-0 top-0">
-                    <button onclick="handleLogout()" class="text-slate-300 hover:text-red-500"><i class="fas fa-power-off"></i></button>
-                </div>
-                <h1 class="text-4xl font-bold text-indigo-600 mb-2">Sheetu's Tide Tracker</h1>
-                <p class="text-slate-500">Made with ❤️ by Appu for Baby <span id="statusTag" class="ml-2 text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-slate-100"></span></p>
+        <div class="max-w-6xl mx-auto p-4 md:p-8 pb-20">
+            <header class="text-center mb-8 relative">
+                <div class="absolute right-0 top-0"><button onclick="handleLogout()" class="text-slate-300 hover:text-red-500 p-2"><i class="fas fa-power-off"></i></button></div>
+                <h1 class="text-3xl md:text-5xl font-bold text-indigo-600 mb-1">Sheetu's Tide Tracker</h1>
+                <p class="text-xs md:text-base text-slate-500">Made with ❤️ by Appu for Baby <span id="statusTag" class="ml-2 text-[10px] font-bold uppercase px-2 py-0.5 rounded border border-slate-200"></span></p>
             </header>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="md:col-span-2 space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+                
+                <div class="md:col-span-7 space-y-6">
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                        <div class="flex justify-between items-center mb-6">
-                            <h2 id="monthDisplay" class="text-2xl font-semibold"></h2>
-                            <div class="space-x-2">
-                                <button onclick="changeMonth(-1)" class="p-2 hover:bg-slate-100 rounded-full"><i class="fas fa-chevron-left text-xs"></i></button>
-                                <button onclick="changeMonth(1)" class="p-2 hover:bg-slate-100 rounded-full"><i class="fas fa-chevron-right text-xs"></i></button>
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                            <h3 id="selectedDateTitle" class="text-2xl font-bold text-indigo-500">Today's Log</h3>
+                            <div class="flex flex-wrap gap-2" id="quickLogButtons"></div>
+                        </div>
+                        <div class="border-t pt-4">
+                            <div id="dailyEntries" class="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scroll"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="md:col-span-5 space-y-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 id="monthDisplay" class="text-xl font-semibold"></h2>
+                            <div class="flex gap-1">
+                                <button onclick="changeMonth(-1)" class="w-8 h-8 flex items-center justify-center hover:bg-slate-100 rounded-full transition"><i class="fas fa-chevron-left text-xs"></i></button>
+                                <button onclick="changeMonth(1)" class="w-8 h-8 flex items-center justify-center hover:bg-slate-100 rounded-full transition"><i class="fas fa-chevron-right text-xs"></i></button>
                             </div>
                         </div>
-                        <div class="calendar-grid text-center font-semibold text-slate-400 mb-2 uppercase text-xs tracking-wider">
+                        <div class="calendar-grid text-center font-bold text-slate-400 mb-2 uppercase text-[10px] tracking-widest">
                             <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
                         </div>
-                        <div id="calendarDays" class="calendar-grid gap-2"></div>
+                        <div id="calendarDays" class="calendar-grid gap-1.5"></div>
                     </div>
 
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                        <h3 class="font-bold mb-4 text-slate-500 flex items-center gap-2"><i class="fas fa-cog"></i> Call Categories</h3>
+                        <h3 class="font-bold mb-4 text-slate-500 text-sm flex items-center gap-2"><i class="fas fa-tags"></i> Call Types</h3>
                         <div class="flex gap-2 mb-4">
-                            <input type="text" id="catName" placeholder="New Category" class="flex-1 border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-400">
-                            <input type="color" id="catColor" value="#6366f1" class="h-10 w-12 border rounded-lg p-1 bg-white">
-                            <button onclick="addCategory()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">Add</button>
+                            <input type="text" id="catName" placeholder="New Label" class="flex-1 border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-400 text-sm">
+                            <input type="color" id="catColor" value="#6366f1" class="h-10 w-10 border rounded-lg p-1 bg-white cursor-pointer">
+                            <button onclick="addCategory()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold text-xs">Add</button>
                         </div>
                         <div id="categoryList" class="flex flex-wrap gap-2"></div>
                     </div>
                 </div>
 
-                <div class="space-y-6">
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 sticky top-6">
-                        <h3 id="selectedDateTitle" class="text-xl font-bold mb-4 text-indigo-500">Today's Log</h3>
-                        <div class="mb-6">
-                            <p class="text-sm text-slate-400 mb-2">Quick Log:</p>
-                            <div id="quickLogButtons" class="flex flex-col gap-2"></div>
-                        </div>
-                        <div class="border-t pt-4">
-                            <div id="dailyEntries" class="space-y-3 max-h-[400px] overflow-y-auto pr-1"></div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -143,25 +132,18 @@
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
-        let currentUser = null;
-        let isGuest = false;
-        let categories = [{ name: 'Priority Call', color: '#ef4444' }];
-        let logs = {};
-        let selectedDate = new Date().toDateString();
-        let currentMonth = new Date();
-        let currentEditIndex = null;
+        let currentUser = null, isGuest = false, logs = {}, selectedDate = new Date().toDateString(), currentMonth = new Date(), currentEditIndex = null;
+        let categories = [{ name: 'Urgent', color: '#ef4444' }, { name: 'Follow-up', color: '#3b82f6' }];
 
-        // AUTH
         window.handleGuestLogin = () => {
-            isGuest = true;
-            currentUser = { uid: 'guest' };
-            const saved = JSON.parse(localStorage.getItem('tide_guest_data')) || { categories: [{ name: 'Call', color: '#6366f1' }], logs: {} };
+            isGuest = true; currentUser = { uid: 'guest' };
+            const saved = JSON.parse(localStorage.getItem('tide_guest_data')) || { categories, logs: {} };
             categories = saved.categories; logs = saved.logs; enterUI();
         };
 
-        window.handleAuth = async (type) => {
+        window.handleAuth = async (t) => {
             const e = document.getElementById('email').value, p = document.getElementById('password').value;
-            try { type === 'login' ? await signInWithEmailAndPassword(auth, e, p) : await createUserWithEmailAndPassword(auth, e, p); } catch (err) { showError(err.message); }
+            try { t === 'login' ? await signInWithEmailAndPassword(auth, e, p) : await createUserWithEmailAndPassword(auth, e, p); } catch (err) { showError(err.message); }
         };
 
         window.handleGoogleLogin = () => signInWithPopup(auth, provider).catch(e => showError(e.message));
@@ -189,11 +171,10 @@
         function enterUI() {
             document.getElementById('authOverlay').classList.add('hidden-ui');
             document.getElementById('mainApp').classList.remove('hidden-ui');
-            document.getElementById('statusTag').innerText = isGuest ? 'Guest Mode' : 'Cloud Sync';
+            document.getElementById('statusTag').innerText = isGuest ? 'Guest' : 'Cloud';
             renderAll();
         }
 
-        // LOGIC
         window.renderAll = () => { renderCalendar(); renderCategories(); renderLogs(); };
 
         window.renderCalendar = () => {
@@ -205,14 +186,13 @@
             for (let i = 0; i < first.getDay(); i++) grid.innerHTML += `<div></div>`;
             for (let d = 1; d <= last.getDate(); d++) {
                 const dateStr = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), d).toDateString();
-                const daily = logs[dateStr] || [];
-                const isSelected = dateStr === selectedDate;
-                const dots = daily.map(l => `<span class="dot" style="background:${l.color}"></span>`).join('');
+                const daily = logs[dateStr] || [], isSel = dateStr === selectedDate;
+                const dots = daily.slice(0, 5).map(l => `<span class="dot" style="background:${l.color}"></span>`).join('');
                 grid.innerHTML += `
-                    <div onclick="selectDate('${dateStr}')" class="h-16 border rounded-xl flex flex-col items-center justify-center cursor-pointer transition 
-                         ${isSelected ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200' : 'hover:bg-slate-50 border-slate-100'}">
-                        <span class="text-sm ${isSelected ? 'font-bold' : ''}">${d}</span>
-                        <div class="flex flex-wrap justify-center px-1">${dots}</div>
+                    <div onclick="selectDate('${dateStr}')" class="day-cell border rounded-lg flex flex-col items-center justify-center cursor-pointer transition 
+                         ${isSel ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-100' : 'hover:bg-slate-50 border-slate-100'}">
+                        <span class="text-[10px] md:text-sm ${isSel ? 'font-bold text-indigo-600' : ''}">${d}</span>
+                        <div class="flex flex-wrap justify-center px-0.5">${dots}</div>
                     </div>`;
             }
         };
@@ -224,8 +204,8 @@
             const list = document.getElementById('categoryList'), buttons = document.getElementById('quickLogButtons');
             list.innerHTML = ''; buttons.innerHTML = '';
             categories.forEach((cat, idx) => {
-                list.innerHTML += `<span class="px-3 py-1 rounded-full text-xs font-semibold text-white flex items-center gap-2" style="background:${cat.color}">${cat.name}<button onclick="removeCat(${idx})">×</button></span>`;
-                buttons.innerHTML += `<button onclick="logCall('${cat.name}', '${cat.color}')" class="text-left px-4 py-2 rounded-lg border-l-4 transition hover:bg-slate-50 text-sm font-medium" style="border-color:${cat.color}; background: ${cat.color}10">+ ${cat.name}</button>`;
+                list.innerHTML += `<span class="px-3 py-1 rounded-full text-[10px] font-bold text-white flex items-center gap-2" style="background:${cat.color}">${cat.name}<button onclick="removeCat(${idx})"><i class="fas fa-times"></i></button></span>`;
+                buttons.innerHTML += `<button onclick="logCall('${cat.name}', '${cat.color}')" class="px-4 py-2 rounded-full border-l-4 transition hover:shadow-sm text-[11px] font-bold" style="border-color:${cat.color}; background: ${cat.color}15">+ ${cat.name}</button>`;
             });
         };
 
@@ -244,42 +224,30 @@
         window.renderLogs = () => {
             const container = document.getElementById('dailyEntries'), daily = logs[selectedDate] || [];
             container.innerHTML = daily.length ? daily.map((l, i) => `
-                <div class="flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-100 group">
-                    <div>
-                        <div class="flex items-center gap-2">
-                             <p class="font-bold text-sm" style="color:${l.color}">${l.name}</p>
-                             <button onclick="openEditModal(${i})" class="hidden group-hover:block text-[10px] text-indigo-400 hover:underline">edit</button>
+                <div class="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-100 group gap-4 transition hover:border-indigo-200">
+                    <div class="min-w-0 flex-1 flex items-center gap-4">
+                        <div class="w-1 h-8 rounded-full" style="background:${l.color}"></div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <p class="font-bold text-sm md:text-base text-slate-700 truncate">${l.name}</p>
+                                <button onclick="openEditModal(${i})" class="text-[10px] text-indigo-400 hover:underline">edit</button>
+                            </div>
+                            <p class="text-[10px] text-slate-400 uppercase font-bold tracking-widest">${l.time}</p>
                         </div>
-                        <p class="text-[10px] text-slate-400 uppercase tracking-wider">${l.time}</p>
                     </div>
-                    <button onclick="deleteEntry(${i})" class="text-slate-300 hover:text-red-400"><i class="fas fa-trash-can text-sm"></i></button>
-                </div>`).join('') : `<p class="text-slate-400 text-sm italic text-center py-4">No calls logged.</p>`;
+                    <button onclick="deleteEntry(${i})" class="text-slate-300 hover:text-red-500 transition-colors p-2"><i class="fas fa-trash-alt text-lg"></i></button>
+                </div>`).join('') : `<p class="text-slate-400 text-sm italic text-center py-10">No calls tracked for this date.</p>`;
         };
 
-        // MODAL FUNCTIONS
         window.openEditModal = (i) => {
-            currentEditIndex = i;
-            const entry = logs[selectedDate][i];
+            currentEditIndex = i; const entry = logs[selectedDate][i];
             document.getElementById('modalEditName').value = entry.name;
             document.getElementById('modalEditTime').value = entry.time;
             document.getElementById('editModal').classList.remove('hidden');
         };
-
-        window.closeEditModal = () => {
-            document.getElementById('editModal').classList.add('hidden');
-            currentEditIndex = null;
-        };
-
-        window.saveEditFromModal = () => {
-            if (currentEditIndex !== null) {
-                logs[selectedDate][currentEditIndex].name = document.getElementById('modalEditName').value;
-                logs[selectedDate][currentEditIndex].time = document.getElementById('modalEditTime').value;
-                save();
-                closeEditModal();
-            }
-        };
-
-        window.deleteEntry = (i) => { if(confirm("Delete this?")) { logs[selectedDate].splice(i,1); save(); } };
+        window.closeEditModal = () => { document.getElementById('editModal').classList.add('hidden'); currentEditIndex = null; };
+        window.saveEditFromModal = () => { if (currentEditIndex !== null) { logs[selectedDate][currentEditIndex].name = document.getElementById('modalEditName').value; logs[selectedDate][currentEditIndex].time = document.getElementById('modalEditTime').value; save(); closeEditModal(); } };
+        window.deleteEntry = (i) => { if(confirm("Delete this log?")) { logs[selectedDate].splice(i,1); save(); } };
         window.removeCat = (i) => { categories.splice(i,1); save(); };
         window.togglePassword = () => { const p = document.getElementById('password'), i = document.getElementById('eyeIcon'); p.type = p.type === 'password' ? 'text' : 'password'; i.className = p.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash'; };
         function showError(m) { const e = document.getElementById('authError'); e.innerText = m; e.classList.remove('hidden'); }
