@@ -60,10 +60,27 @@
             cursor: pointer;
             border: 3px solid transparent;
             transition: transform 0.2s, border-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
         }
         .color-swatch.active {
             border-color: #cbd5e1;
             transform: scale(1.1);
+        }
+
+        /* Custom Color Input Styling */
+        .custom-picker-wrapper {
+            position: relative;
+            background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red);
+        }
+        .custom-picker-wrapper input[type="color"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -225,7 +242,7 @@
                                 <button onclick="addCategory()" class="bg-blue-600 text-white px-6 rounded-xl font-bold text-xs hover:bg-blue-700 transition">Add</button>
                             </div>
                             
-                            <!-- Simple Color Palette -->
+                            <!-- Simple Color Palette with Custom Picker -->
                             <div class="flex flex-wrap gap-2.5 px-1" id="colorPalette">
                                 <div class="color-swatch active" style="background: #2563eb" onclick="selectSwatch('#2563eb', this)"></div>
                                 <div class="color-swatch" style="background: #ef4444" onclick="selectSwatch('#ef4444', this)"></div>
@@ -235,6 +252,10 @@
                                 <div class="color-swatch" style="background: #8b5cf6" onclick="selectSwatch('#8b5cf6', this)"></div>
                                 <div class="color-swatch" style="background: #0ea5e9" onclick="selectSwatch('#0ea5e9', this)"></div>
                                 <div class="color-swatch" style="background: #64748b" onclick="selectSwatch('#64748b', this)"></div>
+                                <div class="color-swatch custom-picker-wrapper" id="customSwatch">
+                                    <i class="fas fa-plus text-[10px] text-white"></i>
+                                    <input type="color" oninput="handleCustomColorChange(this.value, true)" title="Choose custom color">
+                                </div>
                             </div>
                         </div>
                         
@@ -281,7 +302,7 @@
 
         const paletteColors = ['#2563eb', '#ef4444', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#0ea5e9', '#64748b'];
 
-        // SWATCH HANDLER
+        // SWATCH HANDLERS
         window.selectSwatch = (color, el) => {
             activeColor = color;
             document.querySelectorAll('#colorPalette .color-swatch').forEach(s => s.classList.remove('active'));
@@ -292,6 +313,20 @@
             catEditActiveColor = color;
             document.querySelectorAll('#catEditPalette .color-swatch').forEach(s => s.classList.remove('active'));
             el.classList.add('active');
+        };
+
+        window.handleCustomColorChange = (color, isNewCategory) => {
+            if (isNewCategory) {
+                activeColor = color;
+                const customSwatch = document.getElementById('customSwatch');
+                customSwatch.style.background = color;
+                window.selectSwatch(color, customSwatch);
+            } else {
+                catEditActiveColor = color;
+                const customEditSwatch = document.getElementById('catEditCustomSwatch');
+                customEditSwatch.style.background = color;
+                window.selectCatEditSwatch(color, customEditSwatch);
+            }
         };
 
         // AUTH HANDLERS
@@ -464,7 +499,14 @@
                 <div class="color-swatch ${color === cat.color ? 'active' : ''}" 
                      style="background: ${color}" 
                      onclick="selectCatEditSwatch('${color}', this)"></div>
-            `).join('');
+            `).join('') + `
+                <div class="color-swatch custom-picker-wrapper ${!paletteColors.includes(cat.color) ? 'active' : ''}" 
+                     id="catEditCustomSwatch"
+                     style="background: ${!paletteColors.includes(cat.color) ? cat.color : ''}">
+                    <i class="fas fa-plus text-[10px] text-white"></i>
+                    <input type="color" value="${cat.color}" oninput="handleCustomColorChange(this.value, false)">
+                </div>
+            `;
             
             document.getElementById('catManagementModal').classList.remove('hidden-ui');
         };
