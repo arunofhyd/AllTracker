@@ -8,106 +8,89 @@
     <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { font-family: 'League Spartan', sans-serif; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
-        .dot { height: 6px; width: 6px; border-radius: 50%; display: inline-block; margin: 1px; }
+        /* Base weight set to 400 (Regular) instead of bold */
+        body { font-family: 'League Spartan', sans-serif; -webkit-tap-highlight-color: transparent; font-weight: 400; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+        .day-cell { aspect-ratio: 1 / 1; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 50px; }
+        .dot { height: 5px; width: 5px; border-radius: 50%; display: inline-block; margin: 1px; }
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen pb-20">
+<body class="bg-slate-50 text-slate-700 min-h-screen pb-20">
 
     <div class="max-w-7xl mx-auto p-6">
         <header class="text-center mb-10">
-            <h1 class="text-4xl font-bold text-indigo-600 mb-2">Sheetu's Tide Tracker</h1>
-            <p class="text-slate-500">Made with ❤️ by Appu for Baby</p>
+            <h1 class="text-4xl font-semibold text-indigo-600 mb-2">Sheetu's Tide Tracker</h1>
+            <p class="text-slate-400 font-light uppercase tracking-widest text-xs">Made with ❤️ by Appu for Baby</p>
         </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="space-y-6">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 sticky top-6">
-                    <h3 id="selectedDateTitle" class="text-xl font-bold mb-4 text-indigo-500">Today's Log</h3>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <div class="lg:col-span-4 space-y-6">
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
+                    <h3 id="selectedDateTitle" class="text-2xl font-semibold mb-6 text-indigo-500">Today's Log</h3>
                     
-                    <div class="mb-6">
-                        <p class="text-sm text-slate-400 mb-2">Quick Log:</p>
-                        <div id="quickLogButtons" class="flex flex-col gap-2"></div>
+                    <div class="mb-8">
+                        <p class="text-[10px] font-semibold text-slate-400 mb-3 uppercase tracking-widest">Quick Log:</p>
+                        <div id="quickLogButtons" class="flex flex-col gap-2.5"></div>
                     </div>
 
-                    <div class="border-t pt-4">
-                        <div id="dailyEntries" class="space-y-3 max-h-[400px] overflow-y-auto pr-1 custom-scroll"></div>
+                    <div class="border-t border-slate-50 pt-6">
+                        <div id="dailyEntries" class="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scroll"></div>
                     </div>
                 </div>
             </div>
 
-            <div class="md:col-span-2 space-y-6">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 id="monthDisplay" class="text-2xl font-semibold"></h2>
-                        <div class="space-x-2">
-                            <button onclick="changeMonth(-1)" class="p-2 hover:bg-slate-100 rounded-full"><i data-lucide="chevron-left"></i></button>
-                            <button onclick="changeMonth(1)" class="p-2 hover:bg-slate-100 rounded-full"><i data-lucide="chevron-right"></i></button>
+            <div class="lg:col-span-8 space-y-6">
+                <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200">
+                    <div class="flex justify-between items-center mb-8">
+                        <h2 id="monthDisplay" class="text-2xl font-semibold text-slate-700"></h2>
+                        <div class="flex gap-2">
+                            <button onclick="changeMonth(-1)" class="p-2 hover:bg-slate-50 rounded-full transition text-slate-400"><i data-lucide="chevron-left"></i></button>
+                            <button onclick="changeMonth(1)" class="p-2 hover:bg-slate-50 rounded-full transition text-slate-400"><i data-lucide="chevron-right"></i></button>
                         </div>
                     </div>
-                    <div class="calendar-grid text-center font-semibold text-slate-400 mb-2">
-                        <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
+                    <div class="calendar-grid text-center font-semibold text-slate-300 mb-4 text-xs uppercase tracking-widest">
+                        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
                     </div>
-                    <div id="calendarDays" class="calendar-grid gap-2"></div>
+                    <div id="calendarDays" class="calendar-grid"></div>
                 </div>
 
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <h3 class="font-bold mb-4 flex items-center gap-2"><i data-lucide="settings" class="w-4"></i> Categories</h3>
-                    <div class="flex flex-col sm:flex-row gap-2 mb-4">
-                        <input type="text" id="catName" placeholder="New Category Name" class="flex-1 border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-400 text-sm">
-                        <div class="flex gap-2">
-                            <input type="color" id="catColor" value="#6366f1" class="h-10 w-12 border rounded-lg p-1 bg-white cursor-pointer">
-                            <button onclick="addCategory()" class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition font-semibold text-sm flex-1 sm:flex-none">Add</button>
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 text-left">
+                    <h3 class="font-semibold mb-4 text-slate-400 text-xs uppercase tracking-widest flex items-center gap-2"><i data-lucide="settings" class="w-4"></i> Categories</h3>
+                    <div class="flex flex-col sm:flex-row gap-3 mb-6">
+                        <input type="text" id="catName" placeholder="Label name..." class="flex-1 bg-slate-50 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-400 text-sm font-light">
+                        <div class="flex gap-3">
+                            <input type="color" id="catColor" value="#6366f1" class="h-12 w-12 border-none rounded-xl p-1 bg-slate-50 cursor-pointer">
+                            <button onclick="addCategory()" class="bg-indigo-600 text-white px-8 py-3 rounded-xl hover:bg-indigo-700 transition font-semibold text-sm">Add</button>
                         </div>
                     </div>
-                    <div id="categoryList" class="flex flex-wrap gap-2 mt-4 pt-4 border-t"></div>
+                    <div id="categoryList" class="flex flex-wrap gap-2"></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="editModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black bg-opacity-50 p-4">
-        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-xl text-left">
-            <h3 class="text-xl font-bold mb-4">Edit Log Entry</h3>
-            <div class="space-y-4">
-                <div>
-                    <label class="text-xs font-bold text-slate-400 uppercase">Call Title</label>
-                    <input type="text" id="modalEditName" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-400 mt-1">
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-slate-400 uppercase">Time</label>
-                    <input type="text" id="modalEditTime" class="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-400 mt-1">
-                </div>
-                <div class="flex gap-2 pt-2">
-                    <button onclick="saveEditFromModal()" class="flex-1 bg-indigo-600 text-white font-bold py-2 rounded-lg text-sm">Save</button>
-                    <button onclick="closeEditModal()" class="flex-1 bg-slate-100 text-slate-500 font-bold py-2 rounded-lg text-sm">Cancel</button>
+    <div id="editModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
+        <div class="bg-white w-full max-w-sm rounded-[2rem] p-8 shadow-2xl">
+            <h3 class="text-2xl font-semibold mb-6 text-slate-800">Edit Log</h3>
+            <div class="space-y-5">
+                <input type="text" id="modalEditName" class="w-full bg-slate-50 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-400 font-light">
+                <input type="text" id="modalEditTime" class="w-full bg-slate-50 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-400 font-light">
+                <div class="flex gap-3 pt-4">
+                    <button onclick="saveEditFromModal()" class="flex-1 bg-indigo-600 text-white font-semibold py-3 rounded-xl">Save</button>
+                    <button onclick="closeEditModal()" class="flex-1 bg-slate-100 text-slate-500 font-semibold py-3 rounded-xl">Cancel</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        let currentMonth = new Date();
-        let selectedDate = new Date().toDateString();
-        let currentEditIndex = null;
-        let categories = JSON.parse(localStorage.getItem('tide_cats')) || [
-            { name: 'Call', color: '#6366f1' }
-        ];
+        let currentMonth = new Date(), selectedDate = new Date().toDateString(), currentEditIndex = null;
+        let categories = JSON.parse(localStorage.getItem('tide_cats')) || [{ name: 'Priority Call', color: '#ef4444' }];
         let logs = JSON.parse(localStorage.getItem('tide_logs')) || {};
 
-        function init() {
-            renderCalendar();
-            renderCategories();
-            renderLogs();
-            lucide.createIcons();
-        }
-
-        // Logic Functions (Month change, date selection, add categories, log call, delete entry, edit entry)
-        function selectDate(date) { selectedDate = date; renderCalendar(); renderLogs(); }
-        function changeMonth(dir) { currentMonth.setMonth(currentMonth.getMonth() + dir); renderCalendar(); }
-        function save() { localStorage.setItem('tide_cats', JSON.stringify(categories)); localStorage.setItem('tide_logs', JSON.stringify(logs)); renderAll(); }
-        window.save = save; // Make globally accessible for functions called in onclick handlers
+        function init() { renderAll(); lucide.createIcons(); }
 
         function renderCalendar() {
             const grid = document.getElementById('calendarDays'), display = document.getElementById('monthDisplay');
@@ -118,7 +101,11 @@
             for (let d = 1; d <= last.getDate(); d++) {
                 const dateStr = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), d).toDateString(), daily = logs[dateStr] || [], isSel = dateStr === selectedDate;
                 const dots = daily.slice(0, 4).map(l => `<span class="dot" style="background:${l.color}"></span>`).join('');
-                grid.innerHTML += `<div onclick="selectDate('${dateStr}')" class="h-16 border rounded-xl flex flex-col items-center justify-center cursor-pointer transition ${isSel ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200' : 'hover:bg-slate-50 border-slate-100'}"><span class="text-sm ${isSel ? 'font-bold' : ''}">${d}</span><div class="flex flex-wrap justify-center px-1 h-2 mt-1">${dots}</div></div>`;
+                grid.innerHTML += `
+                    <div onclick="selectDate('${dateStr}')" class="day-cell border rounded-[1.2rem] cursor-pointer transition ${isSel ? 'border-indigo-400 bg-indigo-50/50' : 'hover:bg-slate-50 border-slate-100'}">
+                        <span class="text-sm ${isSel ? 'font-semibold text-indigo-600' : 'text-slate-500 font-light'}">${d}</span>
+                        <div class="flex flex-wrap justify-center px-1 h-2 mt-1">${dots}</div>
+                    </div>`;
             }
         }
 
@@ -126,40 +113,40 @@
             const list = document.getElementById('categoryList'), buttons = document.getElementById('quickLogButtons');
             list.innerHTML = ''; buttons.innerHTML = '';
             categories.forEach((cat, idx) => {
-                list.innerHTML += `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold text-white flex items-center gap-1.5 shadow-sm" style="background:${cat.color}">${cat.name}<button onclick="removeCat(${idx})"><i data-lucide="times" class="w-3"></i></button></span>`;
-                buttons.innerHTML += `<button onclick="logCall('${cat.name}', '${cat.color}')" class="text-left px-5 py-3 rounded-xl border-l-[6px] transition hover:shadow-md text-sm font-bold flex items-center" style="border-color:${cat.color}; background: ${cat.color}08; color: #334155">+ Add ${cat.name}</button>`;
+                list.innerHTML += `<span class="px-3 py-1 rounded-full text-[10px] font-semibold text-white flex items-center gap-2 shadow-sm" style="background:${cat.color}">${cat.name}<button onclick="removeCat(${idx})">×</button></span>`;
+                buttons.innerHTML += `<button onclick="logCall('${cat.name}', '${cat.color}')" class="text-left px-5 py-3 rounded-xl border-l-4 transition hover:bg-slate-50 text-sm font-light flex items-center" style="border-color:${cat.color}; background: ${cat.color}05; color: #64748b">+ Add ${cat.name}</button>`;
             });
             lucide.createIcons();
         }
-
-        function addCategory() { const n = document.getElementById('catName').value, c = document.getElementById('catColor').value; if (n) { categories.push({ name: n, color: c }); document.getElementById('catName').value = ''; save(); } }
-        function logCall(name, color) { const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }); if (!logs[selectedDate]) logs[selectedDate] = []; logs[selectedDate].unshift({ name, color, time }); save(); }
 
         function renderLogs() {
             const container = document.getElementById('dailyEntries'), daily = logs[selectedDate] || [];
             document.getElementById('selectedDateTitle').innerText = selectedDate === new Date().toDateString() ? "Today's Log" : selectedDate;
             container.innerHTML = daily.length ? daily.map((l, i) => `
-                <div class="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-50 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.04)] group transition-all hover:scale-[1.01]">
+                <div class="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-100 group">
                     <div class="min-w-0 flex-1">
                         <div class="flex items-center gap-2">
-                             <p class="font-extrabold text-sm md:text-base" style="color:${l.color}">${l.name}</p>
+                             <p class="font-semibold text-sm md:text-base" style="color:${l.color}">${l.name}</p>
                              <button onclick="openEditModal(${i})" class="text-[9px] text-slate-300 hover:text-indigo-400 uppercase font-light">edit</button>
                         </div>
-                        <p class="text-[9px] md:text-xs text-slate-400 font-bold mt-1 uppercase tracking-wider">${l.time}</p>
+                        <p class="text-[10px] text-slate-400 font-light mt-1 tracking-wider">${l.time}</p>
                     </div>
-                    <button onclick="deleteEntry(${i})" class="text-slate-200 hover:text-red-400 transition-colors p-2"><i data-lucide="trash-alt" class="w-5"></i></button>
-                </div>`).join('') : `<p class="text-slate-400 text-xs italic text-center py-6">No calls logged.</p>`;
+                    <button onclick="deleteEntry(${i})" class="text-slate-200 hover:text-red-400 transition-colors p-2"><i data-lucide="trash-2" class="w-5"></i></button>
+                </div>`).join('') : `<p class="text-slate-300 text-xs italic text-center py-10 font-light">No calls logged.</p>`;
             lucide.createIcons();
         }
 
+        function logCall(name, color) { const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }); if (!logs[selectedDate]) logs[selectedDate] = []; logs[selectedDate].unshift({ name, color, time }); save(); }
+        function addCategory() { const n = document.getElementById('catName').value, c = document.getElementById('catColor').value; if (n) { categories.push({ name: n, color: c }); document.getElementById('catName').value = ''; save(); } }
+        function removeCat(i) { categories.splice(i,1); save(); }
+        function deleteEntry(i) { logs[selectedDate].splice(i,1); save(); }
+        function selectDate(date) { selectedDate = date; renderAll(); }
+        function changeMonth(dir) { currentMonth.setMonth(currentMonth.getMonth() + dir); renderCalendar(); }
         function openEditModal(i) { currentEditIndex = i; const entry = logs[selectedDate][i]; document.getElementById('modalEditName').value = entry.name; document.getElementById('modalEditTime').value = entry.time; document.getElementById('editModal').classList.remove('hidden'); }
         function closeEditModal() { document.getElementById('editModal').classList.add('hidden'); currentEditIndex = null; }
         function saveEditFromModal() { if (currentEditIndex !== null) { logs[selectedDate][currentEditIndex].name = document.getElementById('modalEditName').value; logs[selectedDate][currentEditIndex].time = document.getElementById('modalEditTime').value; save(); closeEditModal(); } }
-        function deleteEntry(i) { if(confirm("Delete this?")) { logs[selectedDate].splice(i,1); save(); } }
-        function removeCat(i) { if(confirm("Delete this call type?")) { categories.splice(i,1); save(); } }
-        
+        function save() { localStorage.setItem('tide_cats', JSON.stringify(categories)); localStorage.setItem('tide_logs', JSON.stringify(logs)); renderAll(); }
         function renderAll() { renderCalendar(); renderCategories(); renderLogs(); }
-
         init();
     </script>
 </body>
