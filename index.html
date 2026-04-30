@@ -620,7 +620,10 @@
             });
 
             // Render Summary Badges
-            let summaryHTML = '';
+            let summaryHTML = `
+                <span class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                    Total: ${totalLogs}
+                </span>`;
             for (const [name, count] of Object.entries(summaryCounts)) {
                 const color = summaryColors[name];
                 summaryHTML += `
@@ -629,10 +632,6 @@
                         ${name}: ${count}
                     </span>`;
             }
-            summaryHTML += `
-                <span class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
-                    Total: ${totalLogs}
-                </span>`;
             summaryContainer.innerHTML = summaryHTML;
 
             container.innerHTML = daily.map((l, i) => `
