@@ -197,8 +197,14 @@
                     <div class="bg-white p-5 md:p-8 rounded-3xl shadow-sm border border-slate-200">
                         <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
                             <div class="flex-1">
-                                <h3 id="selectedDateTitle" class="text-2xl md:text-3xl font-bold text-blue-600">Today's Log</h3>
-                                <div id="dailySummary" class="flex flex-wrap gap-2 mt-3"></div>
+                                <div class="flex items-center gap-4">
+                                    <h3 id="selectedDateTitle" class="text-2xl md:text-3xl font-bold text-blue-600">Today's Log</h3>
+                                    <select id="visualizationType" onchange="renderLogs()" class="text-xs bg-slate-50 border border-slate-200 text-slate-500 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-blue-400">
+                                        <option value="badges">Badges</option>
+                                        <option value="bar">Bar Chart</option>
+                                    </select>
+                                </div>
+                                <div id="dailySummary" class="flex flex-wrap gap-2 mt-3 w-full"></div>
                             </div>
                             <div class="flex flex-wrap gap-2 justify-start sm:justify-end" id="quickLogButtons"></div>
                         </div>
@@ -619,18 +625,59 @@
                 totalLogs++;
             });
 
-            // Render Summary Badges
-            let summaryHTML = `
-                <span class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
-                    Total: ${totalLogs}
-                </span>`;
-            for (const [name, count] of Object.entries(summaryCounts)) {
-                const color = summaryColors[name];
+            // Render Summary
+            const vizType = document.getElementById('visualizationType').value;
+            let summaryHTML = '';
+
+            if (vizType === 'bar') {
+                // Stacked Bar Chart Visualization
                 summaryHTML += `
-                    <span class="px-2.5 py-1 rounded-lg text-[11px] font-bold border"
-                          style="background: ${color}15; color: ${color}; border-color: ${color}40;">
-                        ${name}: ${count}
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="text-xs font-bold text-slate-600">Total: ${totalLogs}</span>
+                    </div>
+                    <div class="w-full flex h-6 rounded-lg overflow-hidden border border-slate-200">
+                `;
+                for (const [name, count] of Object.entries(summaryCounts)) {
+                    const color = summaryColors[name];
+                    const percentage = (count / totalLogs) * 100;
+                    summaryHTML += `
+                        <div style="width: ${percentage}%; background: ${color};"
+                             class="h-full flex items-center justify-center relative group transition hover:opacity-90 cursor-default">
+                             <div class="absolute bottom-full mb-1 hidden group-hover:block whitespace-nowrap bg-slate-800 text-white text-[10px] font-bold py-0.5 px-2 rounded z-20">
+                                ${name}: ${count} (${Math.round(percentage)}%)
+                             </div>
+                        </div>
+                    `;
+                }
+                summaryHTML += `</div>`;
+
+                // Legend
+                summaryHTML += `<div class="flex flex-wrap gap-3 mt-2 w-full">`;
+                for (const [name, count] of Object.entries(summaryCounts)) {
+                    const color = summaryColors[name];
+                    summaryHTML += `
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full" style="background: ${color}"></span>
+                            <span class="text-[10px] font-bold text-slate-500">${name} (${count})</span>
+                        </div>
+                    `;
+                }
+                summaryHTML += `</div>`;
+
+            } else {
+                // Default Badges Visualization
+                summaryHTML += `
+                    <span class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                        Total: ${totalLogs}
                     </span>`;
+                for (const [name, count] of Object.entries(summaryCounts)) {
+                    const color = summaryColors[name];
+                    summaryHTML += `
+                        <span class="px-2.5 py-1 rounded-lg text-[11px] font-bold border"
+                              style="background: ${color}15; color: ${color}; border-color: ${color}40;">
+                            ${name}: ${count}
+                        </span>`;
+                }
             }
             summaryContainer.innerHTML = summaryHTML;
 
